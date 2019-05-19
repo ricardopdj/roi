@@ -31,3 +31,13 @@
     transform: rotate(360deg);
   }
 }
+
+.task .form-control[readonly] {
+  background-color: #fff;
+  cursor: pointer;
+}
+
+.task input[type="checkbox"] {
+  height: 20px;
+  width: 20px;
+}
