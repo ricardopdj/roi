@@ -13,8 +13,20 @@ export const getAll = (sessionId) =>
       headers: {
         sessionId: sessionId
       },
-      method: 'GET',
-      mode: 'cors'
+      method: 'GET'
+    })
+    .then(res => res.json())
+    .catch(err => {
+      throw err
+    })
+
+export const deleteTodo = (sessionId, todoId) =>
+  fetch(`${api}/todos/${todoId}`,
+    {
+      headers: {
+        sessionId: sessionId
+      },
+      method: 'DELETE'
     })
     .then(res => res.json())
     .catch(err => {

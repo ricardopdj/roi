@@ -1,18 +1,17 @@
 import React from 'react'
 import './App.css'
 import * as TodoAPI from './TodoAPI'
-import { library } from '@fortawesome/fontawesome-svg-core'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faTrash } from '@fortawesome/free-solid-svg-icons'
-library.add(faTrash)
+import Todo from './Todo'
 
 class App extends React.Component {
   constructor (props) {
     super(props)
     this.state = {
+      sessionId: null,
       todos: null,
       error: null
     }
+    this.handleDelete = this.handleDelete.bind(this)
   }
 
   componentDidMount () {
@@ -24,6 +23,7 @@ class App extends React.Component {
       .initSession()
       .then((data) => {
         this.getTodos(data.sessionId)
+        this.setState({ sessionId: data.sessionId })
       })
       .catch((error) => {
         console.log(error)
@@ -34,27 +34,44 @@ class App extends React.Component {
     TodoAPI
       .getAll(sessionId)
       .then((data) => {
-        switch (data.status) {
-          case 'OK':
-            this.setState({ todos: data.todos })
-            console.log(this.state)
-            break
-          case 'ERROR':
-            this.setState({ error: data.error })
-            break
-          default:
-            console.log(data)
-            break
-        }
-        console.log(this.state.todos)
+        this.updateTodos(data)
       })
       .catch((error) => {
         console.log('error', error)
       })
   }
 
+  handleDelete (todoId) {
+    console.log(this.state)
+
+    TodoAPI
+      .deleteTodo(this.state.sessionId, todoId)
+      .then((data) => {
+        this.updateTodos(data)
+      })
+      .catch((error) => {
+        console.log('error', error)
+      })
+  }
+
+  updateTodos (data) {
+    switch (data.status) {
+      case 'OK':
+        this.setState({ todos: data.todos })
+        console.log(this.state)
+        break
+      case 'ERROR':
+        this.setState({ error: data.error })
+        break
+      default:
+        console.log(data)
+        break
+    }
+  }
+
   render () {
     const todos = this.state.todos
+
     return (
       <div className='App'>
         <nav className='navbar navbar-expand-lg navbar-dark bg-primary'>
@@ -85,29 +102,7 @@ class App extends React.Component {
           {
             todos &&
             Object.values(todos).map((todo, index) =>
-              <div className='input-group mb-3 task' key={index}>
-                <div className='input-group-prepend'>
-                  <div className='input-group-text'>
-                    <input
-                      type='checkbox'
-                      aria-label='Checkbox for following text input'
-                      defaultChecked={todo.isCompleted}
-                    />
-                  </div>
-                </div>
-                <input
-                  type='text'
-                  className='form-control task-name'
-                  aria-label='Text input with checkbox'
-                  value={todo.text}
-                  readOnly
-                />
-                <div className='input-group-append'>
-                  <button className='btn btn-outline-secondary' type='button'>
-                    <FontAwesomeIcon icon='trash' />
-                  </button>
-                </div>
-              </div>
+              <Todo data={todo} onDelete={this.handleDelete} key={index} />
             )
           }
         </div>
