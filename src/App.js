@@ -2,6 +2,7 @@ import React from 'react'
 import './App.css'
 import * as TodoAPI from './TodoAPI'
 import Todo from './Todo'
+import { faLongArrowAltRight } from '@fortawesome/free-solid-svg-icons';
 
 class App extends React.Component {
   constructor (props) {
@@ -42,8 +43,7 @@ class App extends React.Component {
   }
 
   handleDelete (todoId) {
-    console.log(this.state)
-
+    console.log(todoId)
     TodoAPI
       .deleteTodo(this.state.sessionId, todoId)
       .then((data) => {
@@ -55,18 +55,11 @@ class App extends React.Component {
   }
 
   updateTodos (data) {
-    switch (data.status) {
-      case 'OK':
-        this.setState({ todos: data.todos })
-        console.log(this.state)
-        break
-      case 'ERROR':
-        this.setState({ error: data.error })
-        break
-      default:
-        console.log(data)
-        break
+    console.log(data)
+    if (data.status === 'OK') {
+      this.setState({ todos: data.todos })
     }
+    this.setState({ error: data.error })
   }
 
   render () {
@@ -84,7 +77,7 @@ class App extends React.Component {
             <div className='collapse navbar-collapse' id='navbarSupportedContent'>
               <ul className='navbar-nav mr-auto'>
                 <li className='nav-item active'>
-                  <a className='nav-link' href='#'>Home <span className='sr-only'>(current)</span></a>
+                  <a className='nav-link' href='#'>Add <span className='sr-only'>(current)</span></a>
                 </li>
               </ul>
               <form className='form-inline my-2 my-lg-0'>
@@ -95,16 +88,20 @@ class App extends React.Component {
           </div>
         </nav>
         <div className='container py-5'>
-          {
-            this.state.error &&
-            <p>{this.state.error}</p>
-          }
-          {
-            todos &&
-            Object.values(todos).map((todo, index) =>
-              <Todo data={todo} onDelete={this.handleDelete} key={index} />
-            )
-          }
+          <div className='row justify-content-md-center'>
+            <div className='col col-lg-8'>
+              {
+                this.state.error &&
+                <p>{this.state.error}</p>
+              }
+              {
+                todos &&
+                Object.values(todos).map((todo, index) =>
+                  <Todo data={todo} onDelete={this.handleDelete} key={index} />
+                )
+              }
+            </div>
+          </div>
         </div>
       </div>
     )

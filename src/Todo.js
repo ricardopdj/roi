@@ -9,10 +9,15 @@ class Todo extends Component {
     this.props.onDelete(todoId)
   }
 
+  updateTodo (todoId) {
+    // this.props.onDelete(todoId)
+    console.log('update')
+  }
+
   render () {
     const { data } = this.props
     return (
-      <div className='input-group mb-3 task'>
+      <div className='input-group mb-3 task' data-id={data.id}>
         <div className='input-group-prepend'>
           <div className='input-group-text'>
             <input
@@ -27,7 +32,7 @@ class Todo extends Component {
           className='form-control task-name'
           aria-label='Text input with checkbox'
           value={data.text}
-          readOnly
+          onChange={() => this.updateTodo(data.id)}
         />
         <div className='input-group-append'>
           <button className='btn btn-outline-secondary' type='button' onClick={() => this.deleteTodo(data.id)}>
