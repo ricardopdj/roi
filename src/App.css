@@ -32,6 +32,14 @@
   }
 }
 
+body {
+  background-color: #fafafa!important;
+}
+
+.content {
+  background-color: #fff;
+}
+
 .task .form-control[readonly] {
   background-color: #fff;
   cursor: pointer;

@@ -2,7 +2,11 @@ import React from 'react'
 import './App.css'
 import * as TodoAPI from './TodoAPI'
 import Todo from './Todo'
-import { faLongArrowAltRight } from '@fortawesome/free-solid-svg-icons';
+import { Debounce } from 'react-throttle'
+import { library } from '@fortawesome/fontawesome-svg-core'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faPlus, faSync } from '@fortawesome/free-solid-svg-icons'
+library.add(faPlus, faSync)
 
 class App extends React.Component {
   constructor (props) {
@@ -10,9 +14,13 @@ class App extends React.Component {
     this.state = {
       sessionId: null,
       todos: null,
-      error: null
+      error: null,
+      adding: false
     }
+    this.getTodos = this.getTodos.bind(this)
     this.handleDelete = this.handleDelete.bind(this)
+    this.handleAdd = this.handleAdd.bind(this)
+    this.handleUpdate = this.handleUpdate.bind(this)
   }
 
   componentDidMount () {
@@ -23,43 +31,56 @@ class App extends React.Component {
     TodoAPI
       .initSession()
       .then((data) => {
-        this.getTodos(data.sessionId)
         this.setState({ sessionId: data.sessionId })
+        this.getTodos()
       })
       .catch((error) => {
         console.log(error)
       })
   }
 
-  getTodos (sessionId) {
+  getTodos () {
     TodoAPI
-      .getAll(sessionId)
+      .getAll(this.state.sessionId)
       .then((data) => {
-        this.updateTodos(data)
+        this.refreshTodos(data)
       })
       .catch((error) => {
         console.log('error', error)
       })
+  }
+
+  handleAdd () {
+    this.setState({ adding: true })
   }
 
   handleDelete (todoId) {
-    console.log(todoId)
     TodoAPI
       .deleteTodo(this.state.sessionId, todoId)
       .then((data) => {
-        this.updateTodos(data)
+        this.refreshTodos(data)
       })
       .catch((error) => {
         console.log('error', error)
       })
   }
 
-  updateTodos (data) {
-    console.log(data)
+  refreshTodos (data) {
     if (data.status === 'OK') {
       this.setState({ todos: data.todos })
     }
     this.setState({ error: data.error })
+  }
+
+  handleUpdate (todoId, text) {
+    TodoAPI
+      .updateTodo(this.state.sessionId, todoId, text)
+      .then((data) => {
+        alert('Updated')
+      })
+      .catch((error) => {
+        console.log('error', error)
+      })
   }
 
   render () {
@@ -75,19 +96,16 @@ class App extends React.Component {
             </button>
 
             <div className='collapse navbar-collapse' id='navbarSupportedContent'>
-              <ul className='navbar-nav mr-auto'>
-                <li className='nav-item active'>
-                  <a className='nav-link' href='#'>Add <span className='sr-only'>(current)</span></a>
-                </li>
-              </ul>
-              <form className='form-inline my-2 my-lg-0'>
+              <form className='form-inline my-2 my-lg-0 ml-auto'>
                 <input className='form-control mr-sm-2' type='search' placeholder='Search' aria-label='Search' />
-                <button className='btn btn-outline-light my-2 my-sm-0' type='submit'>Search</button>
               </form>
+              <button type='button' className='btn btn-primary ml-auto' onClick={this.getTodos}>
+                <FontAwesomeIcon icon='sync' />
+              </button>
             </div>
           </div>
         </nav>
-        <div className='container py-5'>
+        <div className='container py-5 content'>
           <div className='row justify-content-md-center'>
             <div className='col col-lg-8'>
               {
@@ -97,11 +115,40 @@ class App extends React.Component {
               {
                 todos &&
                 Object.values(todos).map((todo, index) =>
-                  <Todo data={todo} onDelete={this.handleDelete} key={index} />
+                  <Debounce time='1000' handler='onUpdate' key={index}>
+                    <Todo
+                      data={todo}
+                      onUpdate={this.handleUpdate}
+                      onDelete={this.handleDelete}
+                    />
+                  </Debounce>
                 )
               }
             </div>
           </div>
+          {
+            this.state.adding &&
+            <div className='row justify-content-md-center'>
+              <div className='col col-lg-8'>
+                <Todo onUpdate={this.handleUpdate} onDelete={this.handleDelete} />
+              </div>
+            </div>
+          }
+          {
+            !this.state.error &&
+            <div className='row justify-content-md-center'>
+              <div className='col col-lg-8'>
+                { this.state.adding &&
+                <button type='button' className='btn btn-success' onClick={this.addTodo}>
+                  Save
+                </button>
+                }
+                <button type='button' className='btn btn-primary float-right' onClick={this.handleAdd}>
+                  <FontAwesomeIcon icon='plus' />
+                </button>
+              </div>
+            </div>
+          }
         </div>
       </div>
     )

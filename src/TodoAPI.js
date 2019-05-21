@@ -32,3 +32,21 @@ export const deleteTodo = (sessionId, todoId) =>
     .catch(err => {
       throw err
     })
+
+export const updateTodo = (sessionId, todoId, text) =>
+  fetch(`${api}/todos/${todoId}`,
+    {
+      headers: {
+        sessionId: sessionId
+      },
+      method: 'PATCH',
+      body: {
+        'text': text,
+        'isCompleted': false,
+        'urgency': 5
+      }
+    })
+    .then(res => res.json())
+    .catch(err => {
+      throw err
+    })
